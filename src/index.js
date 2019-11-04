@@ -1,4 +1,4 @@
-import "./styles.css";
+// Based on https://towardsdatascience.com/diabetes-prediction-using-logistic-regression-with-tensorflow-js-35371e47c49d
 
 import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
@@ -157,9 +157,18 @@ const createDataSets = (data, features, testSize, batchSize) => {
 
 
 const run = async () => {
+  //  1. LOAD DATA
   const data = await prepareData('./instagram_train.csv');
   console.log('data', data);
 
+  //  2. PREPARE DATA
+
+  //  3. CREATE MODEL
+
+  //  4. TRAIN MODEL
+
+  //  5. VISUALISE RESULTS
+  
   // const features = ["profile pic", "nums/length username", "fullname words", "nums/length fullname",
   //   "name==username", "description length", "external URL", "private", "#posts", "#followers", "#follows"];
 
