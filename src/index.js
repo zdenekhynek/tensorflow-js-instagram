@@ -2,6 +2,8 @@ import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
 import { loadCsv, oneHot } from "./utils.js";
 
+console.log('index.js');
+
 /**
  * 1. Load data from the train CSV file
  * 
