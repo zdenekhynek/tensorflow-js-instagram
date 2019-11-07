@@ -28,3 +28,9 @@ http://localhost:1234/index.html
 ## Test results
 
 After trained your model and the model and its weights have been downloaded, drop both JSON files (pretrained-model.json, pretrained-model.weight) into the 'public' and 'dist' folder.
+
+## Complete solution
+
+```
+src/index_complete.js
+```
