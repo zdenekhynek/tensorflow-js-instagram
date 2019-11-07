@@ -2,6 +2,10 @@ import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
 import { loadCsv, oneHot } from "./utils.js";
 
+// container for visualisations
+const lossContainerEl = document.getElementById("loss-cont");
+const accContainerEl = document.getElementById("acc-cont");
+const matrixContainerEl = document.getElementById("confusion-matrix");
 
 /**
  * 1. Load data from the train CSV file
@@ -22,21 +26,25 @@ export async function loadData() {
  * 
  * Returns:
  *  X - an array of arrays [[],[], ...]
- *  y - an array of labels
+ *  y - an array of labels [0,1] or [1, 0]
  */
 export async function prepareData(data, features) {
   console.log("2. Preparing data ...");
-
+ 
 }
 
 /**
  * 3. Validation split
  * 
+ * Returns:
+ *  trainDs   - dataset used for training
+ *  testDs    - dataset used for validation
  */
 export function splitData(X, y, validationSplit, batchSize) {
   console.log("3. Splitting data ...");
 
-}
+} 
+
 
 /**
  * 4. Define tensorflow sequential model with:
@@ -49,11 +57,12 @@ export function splitData(X, y, validationSplit, batchSize) {
  */
 export function getTfModel(features) {
   console.log("4. Getting tf model ...");
-
+ 
 }
 
 /**
  * 5. Compile model
+ *  - using adam optimizer, binaryCrossentropy and accuracy
  */
 export function compileTfModel(model) {
   console.log("5. Compiling tf model ...");
@@ -72,9 +81,12 @@ export async function trainTfModel(model, trainDs, validationDs) {
 
 /**
  * 7. Test results
+ *  - get testing data as a tensor
+ *  - predict lables using model.predict
+ *  - visualise results with tfvis confusionMatrix
  */
 export async function testResults(model, X, y, split) {
-  
+ 
 }
 
 
@@ -88,7 +100,7 @@ export async function testResults(model, X, y, split) {
   const [X, y] = await prepareData(data, features);
 
   //  3. SPLIT DATA
-  const [trainDs, validationDs] = splitData(X, y, .8, 16);
+  const [trainDs, validationDs] = splitData(X, y, .8, 128);
 
   //  4. GET TF MODEL
   const model = getTfModel(features);

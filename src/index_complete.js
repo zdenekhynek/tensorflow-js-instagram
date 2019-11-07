@@ -2,6 +2,10 @@ import * as tf from "@tensorflow/tfjs";
 import * as tfvis from "@tensorflow/tfjs-vis";
 import { loadCsv, oneHot } from "./utils.js";
 
+// container for visualisations
+const lossContainerEl = document.getElementById("loss-cont");
+const accContainerEl = document.getElementById("acc-cont");
+const matrixContainerEl = document.getElementById("confusion-matrix");
 
 /**
  * 1. Load data from the train CSV file
@@ -88,6 +92,7 @@ export function getTfModel(features) {
 
 /**
  * 5. Compile model
+ *  - using adam optimizer, binaryCrossentropy and accuracy
  */
 export function compileTfModel(model) {
   console.log("5. Compiling tf model ...");
@@ -107,9 +112,7 @@ export function compileTfModel(model) {
  */
 export async function trainTfModel(model, trainDs, validationDs) {
   console.log("6. Training tf model ...");
-  const lossContainer = document.getElementById("loss-cont");
-  const accContainer = document.getElementById("acc-cont");
-
+  
   const trainLogs = [];
   await model.fitDataset(trainDs, {
     epochs: 100,
@@ -117,8 +120,8 @@ export async function trainTfModel(model, trainDs, validationDs) {
     callbacks: {
       onEpochEnd: async (epoch, logs) => {
         trainLogs.push(logs);
-        tfvis.show.history(lossContainer, trainLogs, ["loss", "val_loss"]);
-        tfvis.show.history(accContainer, trainLogs, ["acc", "val_acc"]);
+        tfvis.show.history(lossContainerEl, trainLogs, ["loss", "val_loss"]);
+        tfvis.show.history(accContainerEl, trainLogs, ["acc", "val_acc"]);
       }
     }
   });
@@ -128,6 +131,9 @@ export async function trainTfModel(model, trainDs, validationDs) {
 
 /**
  * 7. Test results
+ *  - get testing data as a tensor
+ *  - predict lables using model.predict
+ *  - visualise results with tfvis confusionMatrix
  */
 export async function testResults(model, X, y, split) {
   const splitIdx = X.length * split;
@@ -138,9 +144,7 @@ export async function testResults(model, X, y, split) {
   const labels = yTest.argMax(-1);
   const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, preds);
 
-  const container = document.getElementById("confusion-matrix");
-
-  tfvis.render.confusionMatrix(container, {
+  tfvis.render.confusionMatrix(matrixContainerEl, {
     values: confusionMatrix,
     tickLabels: ["Fake", "Not-Fake"]
   });
