@@ -142,7 +142,7 @@ export function displayResults(data, features) {
 }
 
 (async() => {
-  const dataPath = './instagram_train.csv';
+  const dataPath = './instagram_test.csv';
 
   //  make sure this is the same with 
   const features = ["profile pic", "nums/length username", "fullname words", "nums/length fullname",

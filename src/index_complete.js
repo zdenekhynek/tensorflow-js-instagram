@@ -26,7 +26,19 @@ export async function loadData() {
  */
 export async function prepareData(data, features) {
   console.log("2. Preparing data ...");
+  const X = data.map((row) => {
+    return features.map((feature) => {
+      const value = row[feature];
+      return value !== undefined ? value : 0;
+    });
+  });
 
+  const y = data.map((row) => {
+    const fake = row.fake !== undefined ? row.fake : 0;
+    return oneHot(fake);
+  });
+
+  return [X, y];
 }
 
 /**
@@ -35,7 +47,19 @@ export async function prepareData(data, features) {
  */
 export function splitData(X, y, validationSplit, batchSize) {
   console.log("3. Splitting data ...");
+  //  convert to tensor
+  const ds = tf.data
+    .zip({ xs: tf.data.array(X), ys: tf.data.array(y) })
+    .shuffle(X.length, 42);
 
+  //  split into validation set 
+  const splitIdx = X.length * validationSplit;
+  console.log('X', X, 'Y', y);
+
+  const trainDs = ds.take(splitIdx).batch(batchSize);
+  const validDs = ds.skip(splitIdx + 1).batch(batchSize);
+
+  return [trainDs, validDs];
 }
 
 /**
@@ -49,7 +73,17 @@ export function splitData(X, y, validationSplit, batchSize) {
  */
 export function getTfModel(features) {
   console.log("4. Getting tf model ...");
+  const model = tf.sequential();
+  
+  model.add(
+    tf.layers.dense({
+      units: 2,
+      activation: "softmax",
+      inputShape: [features.length]
+    })
+  );
 
+  return model;
 }
 
 /**
@@ -57,7 +91,13 @@ export function getTfModel(features) {
  */
 export function compileTfModel(model) {
   console.log("5. Compiling tf model ...");
-
+  const optimizer = tf.train.adam(0.005);
+  
+  model.compile({
+    optimizer: optimizer,
+    loss: "binaryCrossentropy",
+    metrics: ["accuracy"]
+  });
 }
 
 /**
@@ -67,14 +107,43 @@ export function compileTfModel(model) {
  */
 export async function trainTfModel(model, trainDs, validationDs) {
   console.log("6. Training tf model ...");
+  const lossContainer = document.getElementById("loss-cont");
+  const accContainer = document.getElementById("acc-cont");
 
+  const trainLogs = [];
+  await model.fitDataset(trainDs, {
+    epochs: 100,
+    validationData: validationDs,
+    callbacks: {
+      onEpochEnd: async (epoch, logs) => {
+        trainLogs.push(logs);
+        tfvis.show.history(lossContainer, trainLogs, ["loss", "val_loss"]);
+        tfvis.show.history(accContainer, trainLogs, ["acc", "val_acc"]);
+      }
+    }
+  });
+
+  return model;
 }
 
 /**
  * 7. Test results
  */
 export async function testResults(model, X, y, split) {
-  
+  const splitIdx = X.length * split;
+  const xTest = tf.tensor(X.slice(splitIdx));
+  const yTest = tf.tensor(y.slice(splitIdx));
+
+  const preds = model.predict(xTest).argMax(-1);
+  const labels = yTest.argMax(-1);
+  const confusionMatrix = await tfvis.metrics.confusionMatrix(labels, preds);
+
+  const container = document.getElementById("confusion-matrix");
+
+  tfvis.render.confusionMatrix(container, {
+    values: confusionMatrix,
+    tickLabels: ["Fake", "Not-Fake"]
+  });
 }
 
 
@@ -84,7 +153,8 @@ export async function testResults(model, X, y, split) {
   console.log('Loaded data:', data);
 
   //  2. PREPARE DATA
-  const features = [];
+  const features = ["profile pic", "nums/length username", "fullname words", "nums/length fullname",
+    "name==username", "description length", "external URL", "private", "#posts", "#followers", "#follows"];
   const [X, y] = await prepareData(data, features);
 
   //  3. SPLIT DATA
